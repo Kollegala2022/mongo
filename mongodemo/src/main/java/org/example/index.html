@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        button {
+            margin: 10px 0;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<!-- Home Page -->
+<div id="home-page">
+    <h1>Welcome to Online Auction</h1>
+    <button onclick="navigateTo('create-auction-page')">Create Auction</button>
+    <button onclick="navigateTo('bid-page')">View & Bid</button>
+    <button onclick="navigateTo('bid-history-page')">View Bid History</button>
+</div>
+
+<!-- Create Auction Page -->
+<div id="create-auction-page" class="hidden">
+    <h2>Create Auction</h2>
+    <div class="form-container">
+        <form id="create-auction-form">
+            <label for="title">Auction Title:</label>
+            <input type="text" id="title" name="title" required><br><br>
+            <label for="description">Auction Description:</label>
+            <input type="text" id="description" name="description" required><br><br>
+            <label for="startingPrize">Starting Prize:</label>
+            <input type="number" id="startingPrize" name="startingPrize" required><br><br>
+            <button type="submit">Create Auction</button>
+        </form>
+    </div>
+    <button onclick="navigateTo('home-page')">Back to Home</button>
+</div>
+
+
+<!-- Bid Page -->
+<div id="bid-page" class="hidden">
+    <h2>Auction Item</h2>
+    <div id="auction-item">
+        <p>Click "View Auction" to load details.</p>
+    </div>
+    <button id="view-auction">View Auction</button>
+
+    <h2>Place Your Bid</h2>
+    <div class="form-container">
+        <form id="bid-form">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br><br>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br><br>
+            <label for="phone">Phone:</label>
+            <input type="number" id="phone" name="phone" required><br><br>
+            <label for="prize">Bid Amount:</label>
+            <input type="number" id="prize" name="prize" required><br><br>
+            <button type="submit">Submit Bid</button>
+        </form>
+    </div>
+
+    <div id="bid-history-page" class="hidden">
+        <h2>Bid History</h2>
+        <div id="bid-history">
+            <p>Loading bid history...</p>
+        </div>
+
+        <h2>Change Your Bid</h2>
+        <form id="change-bid-form">
+            <label for="change-email">Email:</label>
+            <input type="email" id="change-email" name="email" required><br>
+            <label for="new-prize">New Bid Amount:</label>
+            <input type="number" id="new-prize" name="prize" required><br>
+            <button type="submit">Change Bid</button>
+        </form>
+
+        <button onclick="navigateTo('home-page')">Back to Home</button>
+    </div>
+
+    <button onclick="navigateTo('home-page')">Back to Home</button>
+</div>
+
+
+<!--&lt;!&ndash; Bid History Page &ndash;&gt;-->
+<!--<div id="bid-history-page" class="hidden">-->
+<!--    <h2>Bid History</h2>-->
+<!--    <div id="bid-history">-->
+<!--        <p>Loading bid history...</p>-->
+<!--    </div>-->
+
+<!--    <h2>Change Your Bid</h2>-->
+<!--    <form id="change-bid-form">-->
+<!--        <label for="change-email">Email:</label>-->
+<!--        <input type="email" id="change-email" name="email" required><br>-->
+<!--        <label for="new-prize">New Bid Amount:</label>-->
+<!--        <input type="number" id="new-prize" name="prize" required><br>-->
+<!--        <button type="submit">Change Bid</button>-->
+<!--    </form>-->
+
+<!--    <button onclick="navigateTo('home-page')">Back to Home</button>-->
+<!--</div>-->
+
+<!-- Winner Announcement -->
+<h2>Winner</h2>
+<div id="winner">
+    <p>Winner details will be announced here after creating an auction.</p>
+</div>
+
+<script>
+        const apiUrl = "http://localhost:8081";
+
+        // Navigation function
+        function navigateTo(pageId) {
+            const pages = ["home-page", "create-auction-page", "bid-page", "bid-history-page"];
+            pages.forEach(page => {
+                document.getElementById(page).classList.add("hidden");
+            });
+            document.getElementById(pageId).classList.remove("hidden");
+        }
+
+
+        // Handle Create Auction Form Submission
+        document.getElementById("create-auction-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch(`${apiUrl}/auction`, {
+                method: "POST",
+                body: JSON.stringify(Object.fromEntries(formData)),
+                headers: { "Content-Type": "application/json" }
+            }).then(response => {
+                if (response.ok) {
+                    alert("Auction created successfully!");
+                    setTimeout(fetchWinner, 60000); // Announce winner after 1 minute
+                    navigateTo("home-page");
+                } else {
+                    alert("Failed to create auction.");
+                }
+            });
+        });
+
+        // Handle View Auction
+        document.getElementById("view-auction").addEventListener("click", function() {
+<!--             fetch(`${apiUrl}/auction`)-->
+<!--                .then(response => response.json())-->
+<!--                .then(data => {-->
+<!--                    document.getElementById("auction-item").innerHTML = `-->
+<!--                        <p><strong>Title:</strong> ${data.title}</p>-->
+<!--                        <p><strong>Description:</strong> ${data.description}</p>-->
+<!--                        <p><strong>Starting Prize:</strong> ${data.startingPrize}</p>-->
+<!--                    `;-->
+<!--                });-->
+                     fetch(`${apiUrl}/auction`)
+                    .then(response => {
+                        if (!response.ok) throw new Error("Failed to fetch auction data");
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById("auction-item").innerHTML = `
+                            <p><strong>Title:</strong> ${data.title}</p>
+                            <p><strong>Description:</strong> ${data.description}</p>
+                            <p><strong>Starting Prize:</strong> ${data.startingPrize}</p>
+                        `;
+                    })
+                    .catch(err => {
+                        alert(`Error: ${err.message}`);
+                    });
+
+        });
+
+        // Handle Bid Form Submission
+        document.getElementById("bid-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch(`${apiUrl}/bids`, {
+                method: "POST",
+                body: JSON.stringify(Object.fromEntries(formData)),
+                headers: { "Content-Type": "application/json" }
+            }).then(response => {
+                if (response.ok) {
+                    alert("Bid submitted successfully!");
+                    loadBidHistory();
+                } else {
+                    alert("Failed to submit bid.");
+                }
+            });
+        });
+
+        // Load Bid History
+        function loadBidHistory() {
+            fetch(`${apiUrl}/bids`)
+                .then(response => response.json())
+                .then(data => {
+                    const historyHtml = data.map(bid => `
+                        <p><strong>Name:</strong> ${bid.name} | <strong>Bid:</strong> ${bid.prize}</p>
+                    `).join("");
+                    document.getElementById("bid-history").innerHTML = historyHtml || "<p>No bids yet.</p>";
+                });
+        }
+
+
+<!--        document.getElementById("change-bid-form").addEventListener("submit", function(event) {-->
+<!--        event.preventDefault();-->
+<!--        const formData = new FormData(event.target);-->
+<!--        fetch(`${apiUrl}/change-bid`, {-->
+<!--            method: "PUT",-->
+<!--            headers: { "Content-Type": "application/json" },-->
+<!--            body: JSON.stringify(Object.fromEntries(formData)),-->
+<!--        }).then(response => {-->
+<!--            if (response.ok) {-->
+<!--                alert("Bid changed successfully!");-->
+<!--                fetchBidHistory();-->
+<!--            } else {-->
+<!--                alert("Failed to change bid.");-->
+<!--            }-->
+<!--        });-->
+
+            document.getElementById("change-bid-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Collect the form data
+            const email = document.getElementById("change-email").value;
+            const newPrize = document.getElementById("new-prize").value;
+
+            // Construct the JSON body
+            const requestBody = {
+                email: email,
+                prize: parseFloat(newPrize)
+            };
+
+            // Make the PUT request
+            fetch(`${apiUrl}/change-bid`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestBody),
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Bid changed successfully!");
+                    loadBidHistory(); // Refresh the bid history after successful update
+                } else {
+                    response.json().then(data => {
+                        const errorMessage = data.error || "Failed to change bid.";
+                        alert(errorMessage);
+                    });
+                }
+            })
+            .catch(error => {
+                alert("An error occurred: " + error.message);
+            });
+        });
+
+    });
+
+        // Fetch Winner
+        function fetchWinner() {
+            fetch(`${apiUrl}/winner`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("winner").innerHTML = `
+                        <p><strong>Name:</strong> ${data.name} | <strong>Winning Bid:</strong> ${data.prize}</p>
+                    `;
+                });
+        }
+    </script>
+</body>
+</html>
